@@ -4,6 +4,6 @@ import org.nico.soson.feature.SerializeFeature;
 
 public abstract class AbstractParser {
 
-	public abstract Object parse(String json, Class<?> clazz, SerializeFeature... features);
+	public abstract Object parse(char[] chars, Class<?> clazz, SerializeFeature... features);
 	
 }

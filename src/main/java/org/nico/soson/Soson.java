@@ -19,6 +19,6 @@ public class Soson {
 	
 	@SuppressWarnings("unchecked")
 	public static <T> T toObject(String json, Class<T> clazz, SerializeFeature... features) {
-		return (T) parser.parse(json, clazz, features);
+		return (T) parser.parse(json.toCharArray(), clazz, features);
 	}
 }
