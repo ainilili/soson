@@ -22,11 +22,11 @@ public class ParseHandler {
 	private List<Class<?>> dic;
 
 	private HandleModel model;
-	
+
 	private StringBuilder keyBuilder;
-	
+
 	private StringBuilder valueBuilder;
-	
+
 	public ParseHandler(List<Class<?>> dic) {
 		this.stack = new Stack<>();
 		this.dic = dic;
@@ -37,27 +37,27 @@ public class ParseHandler {
 	public boolean keyEnough(){
 		return keyBuilder.length() > 0;
 	}
-	
+
 	public boolean valueEnough(){
 		return valueBuilder.length() > 0;
 	}
-	
+
 	public void keyClear(){
 		keyBuilder.setLength(0);
 	}
-	
+
 	public void valueClear(){
 		valueBuilder.setLength(0);
 	}
-	
+
 	/**
 	 * handle "{"
 	 * 
 	 * @param c
 	 */
 	public void handleBrace(char c){
-		ObjectEntity preObj = stack.peek();
-		stack.add(new ObjectEntity(ObjectManager.getObjectEntity(Map.class), Map.class));
+		ObjectEntity preObj = stackPeek();
+		stack.add(ObjectManager.getObjectEntity(Map.class));
 		model = HandleModel.KEY;
 		if(preObj != null){
 			if(keyEnough() && preObj.isType(Map.class)){
@@ -73,14 +73,18 @@ public class ParseHandler {
 	 * @param c
 	 */
 	public void handleUnBrace(char c){
-		handleComma(c);
-		ObjectEntity curObj = stack.pop();
-		ObjectEntity preObj = stack.peek();
-		if(preObj != null){
-			if(preObj.getKey() != null && preObj.isType(Map.class)){
-				ObjectUtil.put(preObj, preObj.getKey(), curObj.getObj());
-			}else if(preObj.isType(Collection.class)){
-				ObjectUtil.add(preObj, curObj.getObj());
+		if(keyEnough()){
+			handleComma(c);
+		}
+		if(stack.size() > 1){
+			ObjectEntity curObj = stackPop();
+			ObjectEntity preObj = stackPeek();
+			if(preObj != null){
+				if(preObj.getKey() != null && preObj.isType(Map.class)){
+					ObjectUtil.put(preObj, preObj.getKey(), curObj.getObj());
+				}else if(preObj.isType(Collection.class)){
+					ObjectUtil.add(preObj, curObj.getObj());
+				}
 			}
 		}
 	}
@@ -91,8 +95,8 @@ public class ParseHandler {
 	 * @param c
 	 */
 	public void handleBracket(char c){
-		ObjectEntity preObj = stack.peek();
-		stack.add(new ObjectEntity(ObjectManager.getObjectEntity(Collection.class), Collection.class));
+		ObjectEntity preObj = stackPeek();
+		stack.add(ObjectManager.getObjectEntity(Collection.class));
 		model = HandleModel.VALUE;
 		if(preObj != null){
 			if(keyEnough() && preObj.isType(Map.class)){
@@ -108,14 +112,18 @@ public class ParseHandler {
 	 * @param c
 	 */
 	public void handleUnBracket(char c){
-		handleComma(c);
-		ObjectEntity curObj = stack.pop();
-		ObjectEntity preObj = stack.peek();
-		if(preObj != null){
-			if(preObj.getKey() != null && preObj.isType(Map.class)){
-				ObjectUtil.put(preObj, preObj.getKey(), curObj.getObj());
-			}else if(preObj.isType(Collection.class)){
-				ObjectUtil.add(preObj, curObj.getObj());
+		if(valueEnough()){
+			handleComma(c);
+		}
+		if(stack.size() > 1){
+			ObjectEntity curObj = stackPop();
+			ObjectEntity preObj = stackPeek();
+			if(preObj != null){
+				if(preObj.getKey() != null && preObj.isType(Map.class)){
+					ObjectUtil.put(preObj, preObj.getKey(), curObj.getObj());
+				}else if(preObj.isType(Collection.class)){
+					ObjectUtil.add(preObj, curObj.getObj());
+				}
 			}
 		}
 	}
@@ -148,7 +156,7 @@ public class ParseHandler {
 	 * @param c
 	 */
 	public void handleComma(char c){
-		ObjectEntity curObj = stack.peek();
+		ObjectEntity curObj = stackPeek();
 		if(keyEnough() && valueEnough() && curObj.isType(Map.class)){
 			ObjectUtil.put(curObj, keyBuilder.toString(), valueBuilder.toString());
 			keyClear();
@@ -160,9 +168,29 @@ public class ParseHandler {
 			model = HandleModel.VALUE;
 		}
 	}
-	
+
 	public Object getTarget(){
-		return stack.pop();
+		if(! stack.isEmpty()){
+			return stack.get(0).getObj();
+		}else{
+			return null;
+		}
+	}
+
+	public ObjectEntity stackPop(){
+		if(! stack.isEmpty()){
+			return stack.pop();
+		}else{
+			return null;
+		}
+	}
+
+	public ObjectEntity stackPeek(){
+		if(! stack.isEmpty()){
+			return stack.peek();
+		}else{
+			return null;
+		}
 	}
 
 }

@@ -1,38 +1,34 @@
 package org.nico.soson.test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Test;
 import org.nico.soson.Soson;
-import org.nico.soson.utils.QuotationUtil;
-import org.xml.sax.Locator;
 
 public class LitterTest {
 
-	public static void main(String[] args) {
-		
-		StringBuilder builder = new StringBuilder();
-		int count = 10 * 100000;
-		
-		builder.append("{");
-		while(count -- > 0) {
-			builder.append("\"" + count + "\":{\"name\":\"nico\"}");
-			if(count > 0) {
-				builder.append(",");
-			}
-		}
-		builder.append("}");
-		
+	@Test
+	public void testMap(){
+		StringBuilder builder = new StringBuilder("{\"name\":\"nico\",\"name1\":\"nico\",\"name2\":{\"a\":1,\"b\":[1,2,3]}}");
 		long start = System.currentTimeMillis();
-		
-		Soson.toObject(builder.toString(), Map.class);
-		
+		Map<String, Object> map = Soson.toObject(builder.toString(), Map.class);
 		long end = System.currentTimeMillis();
-		
-		System.out.println(end - start);
-		
-	}             
+		System.out.println("Map测试：");
+		System.out.println((end - start) + "ms");
+		System.out.println(map);
+	}
 	
-	
+	@Test
+	public void testList(){
+		StringBuilder builder = new StringBuilder("[{1:1,2:2}]");
+		long start = System.currentTimeMillis();
+		List<Object> list = Soson.toObject(builder.toString(), List.class);
+		long end = System.currentTimeMillis();
+		System.out.println("List测试：");
+		System.out.println((end - start) + "ms");
+		System.out.println(list);
+	}
+
+
 }

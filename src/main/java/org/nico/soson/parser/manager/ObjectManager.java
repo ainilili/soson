@@ -22,7 +22,7 @@ public class ObjectManager {
 		if(Map.class.isAssignableFrom(clazz)){
 			return new ObjectEntity(new LinkedHashMap<String, Object>(), Map.class);
 		}else if(Collection.class.isAssignableFrom(clazz)){
-			return new ObjectEntity(new ArrayList<Object>(10), List.class);
+			return new ObjectEntity(new ArrayList<Object>(10), Collection.class);
 		}else{
 			throw new UnSupportedException("Unsupport this class [" + clazz + "] for manager");
 		}

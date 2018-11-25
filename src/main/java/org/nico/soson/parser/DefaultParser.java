@@ -45,8 +45,7 @@ public class DefaultParser extends AbstractParser{
 				handler.handleChar(c);
 			}
 		}
-
-		return null;
+		return handler.getTarget();
 	}
 
 }
