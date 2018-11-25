@@ -1,33 +1,34 @@
 package org.nico.soson.test;
 
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
+import org.nico.noson.Noson;
 import org.nico.soson.Soson;
 
 public class LitterTest {
-
-	@Test
-	public void testMap(){
-		StringBuilder builder = new StringBuilder("{\"name\":\"nico\",\"name1\":\"nico\",\"name2\":{\"a\":1,\"b\":[1,2,3]}}");
-		long start = System.currentTimeMillis();
-		Map<String, Object> map = Soson.toObject(builder.toString(), Map.class);
-		long end = System.currentTimeMillis();
-		System.out.println("Map测试：");
-		System.out.println((end - start) + "ms");
-		System.out.println(map);
-	}
 	
 	@Test
-	public void testList(){
-		StringBuilder builder = new StringBuilder("[{1:1,2:2}]");
+	public void testMany(){
+		int count = 100 * 10000;
+		
+		StringBuilder builder = new StringBuilder("[");
+		for(int index = 0; index < count; index ++){
+			builder.append("{\"name" + index + "\":\"nico" + index + "\"}");
+			if(index != count - 1){
+				builder.append(",");
+			}
+		}
+		builder.append("]");
+		System.out.println("长json性能测试：");
 		long start = System.currentTimeMillis();
-		List<Object> list = Soson.toObject(builder.toString(), List.class);
+		
+//		List<Object> list = Soson.toObject(builder.toString(), List.class);
+		List<Object> list = Noson.convert(builder.toString(), List.class);
+		
 		long end = System.currentTimeMillis();
-		System.out.println("List测试：");
 		System.out.println((end - start) + "ms");
-		System.out.println(list);
+		System.out.println(list.get(0));
 	}
 
 

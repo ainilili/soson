@@ -27,6 +27,11 @@
             <artifactId>junit</artifactId>
             <version>4.11</version>
        </dependency>
+       <dependency>
+            <groupId>com.smallnico</groupId>
+            <artifactId>noson</artifactId>
+            <version>1.1.6</version>
+       </dependency>
 	</dependencies>
 
 	<developers>

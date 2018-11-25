@@ -49,6 +49,16 @@ public class ParseHandler {
 	public void valueClear(){
 		valueBuilder.setLength(0);
 	}
+	
+	public String keyGet(){
+		String key = keyBuilder.toString().trim();
+		
+		return keyBuilder.toString();
+	}
+	
+	public Object valueGet(){
+		return valueBuilder.toString();
+	}
 
 	/**
 	 * handle "{"
@@ -61,7 +71,7 @@ public class ParseHandler {
 		model = HandleModel.KEY;
 		if(preObj != null){
 			if(keyEnough() && preObj.isType(Map.class)){
-				preObj.setKey(keyBuilder.toString());
+				preObj.setKey(keyGet());
 				keyClear();
 			}
 		}
@@ -100,7 +110,7 @@ public class ParseHandler {
 		model = HandleModel.VALUE;
 		if(preObj != null){
 			if(keyEnough() && preObj.isType(Map.class)){
-				preObj.setKey(keyBuilder.toString());
+				preObj.setKey(keyGet());
 				keyClear();
 			}
 		}
@@ -158,12 +168,12 @@ public class ParseHandler {
 	public void handleComma(char c){
 		ObjectEntity curObj = stackPeek();
 		if(keyEnough() && valueEnough() && curObj.isType(Map.class)){
-			ObjectUtil.put(curObj, keyBuilder.toString(), valueBuilder.toString());
+			ObjectUtil.put(curObj, keyGet(), valueGet());
 			keyClear();
 			valueClear();
 			model = HandleModel.KEY;
 		}else if(valueEnough() && curObj.isType(Collection.class)){
-			ObjectUtil.add(curObj, valueBuilder.toString());
+			ObjectUtil.add(curObj, valueGet());
 			valueClear();
 			model = HandleModel.VALUE;
 		}
@@ -192,5 +202,5 @@ public class ParseHandler {
 			return null;
 		}
 	}
-
+	
 }
