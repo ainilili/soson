@@ -1,23 +1,24 @@
 package org.nico.soson.parser;
 
+import java.util.List;
+
 import org.nico.soson.feature.SerializeFeature;
 import org.nico.soson.parser.handler.ParseHandler;
+import org.nico.soson.parser.resolve.ClassResolve;
 import org.nico.soson.utils.QuotationUtil;
 
 public class DefaultParser extends AbstractParser{
 
 	@Override
 	public Object parse(char[] chars, Class<?> clazz, SerializeFeature... features) {
-
-		ParseHandler handler = new ParseHandler(null);
+		
+		List<Class<?>> dic = new ClassResolve(clazz).excute();
+		
+		ParseHandler handler = new ParseHandler(dic);
 		QuotationUtil qu = new QuotationUtil();
 		for(int index = 0; index < chars.length; index ++){
 			char c = chars[index];
-			if(index > 0) {
-				qu.check(chars[index - 1], c);
-			}else {
-				qu.check(c);
-			}
+			qu.check(c);
 			if(qu.isClose()){
 				switch(c){ 
 				case '[':

@@ -126,6 +126,9 @@ public class ParseHandler {
 		handlePop();
 	}
 	
+	/**
+	 * handle pop
+	 */
 	public void handlePop() {
 		if(stack.size() > 1){
 			cur = stackPop();
@@ -148,18 +151,15 @@ public class ParseHandler {
 	public void handleChar(char c){
 		if(model == HandleModel.KEY){
 			if(key.length() == 0) {
-				if(CharacterUtil.isWhitespace(c)) {
-					return;
-				}else if(CharacterUtil.isQuotation(c)) {
+				if(CharacterUtil.isQuotation(c)) {
+					key.setStrFlag(true);
 					return;
 				}
 			}
 			key.append(c);
 		}else if(model == HandleModel.VALUE){
 			if(value.length() == 0) {
-				if(CharacterUtil.isWhitespace(c)) {
-					return;
-				}else if(CharacterUtil.isQuotation(c)) {
+				if(CharacterUtil.isQuotation(c)) {
 					return;
 				}
 			}

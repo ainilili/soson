@@ -11,11 +11,9 @@ public class QuotationUtil {
 	
 	private char lastValidChar;
 	
-	public void check(char currentChar) {
-		check(lastValidChar, currentChar);
-	}
+	private char lastNormalChar;
 	
-	public void check(char preChar, char currentChar){
+	public void check(char currentChar){
 		if(isClose()) {
 			if(lastValidChar == ','
 					|| lastValidChar == ':'
@@ -37,7 +35,7 @@ public class QuotationUtil {
 		}else {
 			if(CharacterUtil.isQuotation(lastValidChar)) {
 				if(currentChar == lastValidChar
-						&& preChar != '\\') {
+						&& lastNormalChar != '\\') {
 					closeFlag = ! closeFlag;
 				}
 			}else {
@@ -50,9 +48,12 @@ public class QuotationUtil {
 				}
 			}
 		}
+		
+		lastNormalChar = currentChar;
 	}
 	
 	public boolean isClose(){
 		return closeFlag;
 	}
+	
 }

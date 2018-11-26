@@ -1,12 +1,12 @@
 package org.nico.soson.test;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 import org.nico.noson.Noson;
 import org.nico.soson.Soson;
+import org.nico.soson.entity.Complex;
 import org.nico.soson.entity.ObjectEntity;
 import org.nico.soson.parser.manager.ObjectManager;
 import org.nico.soson.utils.ObjectUtil;
@@ -19,7 +19,7 @@ public class LitterTest {
 	
 	public static String json = null;
 	
-	public static int count = 300 * 10000;
+	public static int count = 100 * 10000;
 	
 	static {
 		StringBuilder builder = new StringBuilder("[");
@@ -45,7 +45,7 @@ public class LitterTest {
 		System.out.println(list.get(0));
 	}
 	
-	@Test
+//	@Test
 	public void testGson(){
 		Gson gson = new Gson();
 		System.out.println("Gson：");
@@ -97,21 +97,26 @@ public class LitterTest {
 //	@Test
 	public void testQuotationUtil(){
 		
-		String json = "{a:1321,b:23123,'c':3,\"d\":'456f'}";
+		String json = "{a:1321,b:23！@#%……&*（）123,'c':3,\"d\":'456\"f'}";
 		
 		QuotationUtil qu = new QuotationUtil();
 		char[] chars = json.toCharArray();
 		for(int index = 0; index < chars.length; index ++){
 			char c = chars[index];
-			if(index > 0) {
-				qu.check(chars[index - 1], c);
-			}else {
-				qu.check(c);
-			}
+			qu.check(c);
 			System.out.println(c + "-" + qu.isClose());
 		}
 		
 		System.out.println(Soson.toObject(json, Map.class));
+		Gson gson = new Gson();
+		System.out.println(gson.fromJson(json, Map.class));
 	}
 
+	@Test
+	public void testComplex() {
+		String json = "{\"a\":[1,2,3],\"b\":[4,5,6]}";
+		Map<String, List<Integer>> map = Soson.toObject(json, new Complex<Map<String, List<Integer>>>(){});
+		
+		System.out.println(map);
+	}
 }

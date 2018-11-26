@@ -1,4 +1,4 @@
-package org.nico.soson.parser.exception;
+package org.nico.soson.exception;
 
 /** 
  * 

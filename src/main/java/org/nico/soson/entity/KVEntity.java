@@ -5,7 +5,7 @@ public class KVEntity {
 	private StringBuilder builder;
 	
 	private boolean strFlag;
-
+	
 	public KVEntity() {
 		this.builder = new StringBuilder();
 	}
@@ -16,7 +16,7 @@ public class KVEntity {
 	
 	public void clear() {
 		builder.setLength(0);
-		this.strFlag = false;
+		strFlag = false;
 	}
 	
 	public int length() {
@@ -34,4 +34,5 @@ public class KVEntity {
 	public void setStrFlag(boolean strFlag) {
 		this.strFlag = strFlag;
 	}
+
 }
