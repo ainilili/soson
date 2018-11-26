@@ -50,4 +50,10 @@ public class ObjectEntity {
 	public boolean isType(Class<?> parent){
 		return parent.isAssignableFrom(this.type);
 	}
+
+	@Override
+	public String toString() {
+		return "ObjectEntity [obj=" + obj + ", type=" + type + ", key=" + key + "]";
+	}
+	
 }

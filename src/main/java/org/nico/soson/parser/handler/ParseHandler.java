@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.nico.soson.entity.HandleModel;
+import org.nico.soson.entity.KVEntity;
 import org.nico.soson.entity.ObjectEntity;
 import org.nico.soson.parser.manager.ObjectManager;
+import org.nico.soson.utils.CharacterUtil;
 import org.nico.soson.utils.ObjectUtil;
 
 /** 
@@ -23,41 +25,45 @@ public class ParseHandler {
 
 	private HandleModel model;
 
-	private StringBuilder keyBuilder;
+	private KVEntity key;
 
-	private StringBuilder valueBuilder;
-
+	private KVEntity value;
+	
+	private ObjectEntity pre;
+	
+	private ObjectEntity cur;
+	
 	public ParseHandler(List<Class<?>> dic) {
 		this.stack = new Stack<>();
 		this.dic = dic;
-		this.keyBuilder = new StringBuilder();
-		this.valueBuilder = new StringBuilder();
+		this.key = new KVEntity();
+		this.value = new KVEntity();
 	}
 
 	public boolean keyEnough(){
-		return keyBuilder.length() > 0;
+		return key.length() > 0;
 	}
 
 	public boolean valueEnough(){
-		return valueBuilder.length() > 0;
+		return value.length() > 0;
 	}
 
 	public void keyClear(){
-		keyBuilder.setLength(0);
+		key.clear();
 	}
 
 	public void valueClear(){
-		valueBuilder.setLength(0);
+		value.clear();
 	}
 	
 	public String keyGet(){
-		String key = keyBuilder.toString().trim();
-		
-		return keyBuilder.toString();
+		String k = key.value();
+		return k;
 	}
 	
 	public Object valueGet(){
-		return valueBuilder.toString();
+		String v = value.value();
+		return v;
 	}
 
 	/**
@@ -66,12 +72,13 @@ public class ParseHandler {
 	 * @param c
 	 */
 	public void handleBrace(char c){
-		ObjectEntity preObj = stackPeek();
-		stack.add(ObjectManager.getObjectEntity(Map.class));
+		pre = stackPeek();
+		cur = ObjectManager.getMap();
+		stack.push(cur);
 		model = HandleModel.KEY;
-		if(preObj != null){
-			if(keyEnough() && preObj.isType(Map.class)){
-				preObj.setKey(keyGet());
+		if(pre != null){
+			if(keyEnough()){
+				pre.setKey(keyGet());
 				keyClear();
 			}
 		}
@@ -86,17 +93,7 @@ public class ParseHandler {
 		if(keyEnough()){
 			handleComma(c);
 		}
-		if(stack.size() > 1){
-			ObjectEntity curObj = stackPop();
-			ObjectEntity preObj = stackPeek();
-			if(preObj != null){
-				if(preObj.getKey() != null && preObj.isType(Map.class)){
-					ObjectUtil.put(preObj, preObj.getKey(), curObj.getObj());
-				}else if(preObj.isType(Collection.class)){
-					ObjectUtil.add(preObj, curObj.getObj());
-				}
-			}
-		}
+		handlePop();
 	}
 
 	/**
@@ -105,12 +102,13 @@ public class ParseHandler {
 	 * @param c
 	 */
 	public void handleBracket(char c){
-		ObjectEntity preObj = stackPeek();
-		stack.add(ObjectManager.getObjectEntity(Collection.class));
+		pre = stackPeek();
+		cur = ObjectManager.getCollection();
+		stack.push(cur);
 		model = HandleModel.VALUE;
-		if(preObj != null){
-			if(keyEnough() && preObj.isType(Map.class)){
-				preObj.setKey(keyGet());
+		if(pre != null){
+			if(keyEnough()){
+				pre.setKey(keyGet());
 				keyClear();
 			}
 		}
@@ -125,14 +123,18 @@ public class ParseHandler {
 		if(valueEnough()){
 			handleComma(c);
 		}
+		handlePop();
+	}
+	
+	public void handlePop() {
 		if(stack.size() > 1){
-			ObjectEntity curObj = stackPop();
-			ObjectEntity preObj = stackPeek();
-			if(preObj != null){
-				if(preObj.getKey() != null && preObj.isType(Map.class)){
-					ObjectUtil.put(preObj, preObj.getKey(), curObj.getObj());
-				}else if(preObj.isType(Collection.class)){
-					ObjectUtil.add(preObj, curObj.getObj());
+			cur = stackPop();
+			pre = stackPeek();
+			if(pre != null){
+				if(pre.isType(Map.class)){
+					ObjectUtil.put(pre, pre.getKey(), cur.getObj());
+				}else if(pre.isType(Collection.class)){
+					ObjectUtil.add(pre, cur.getObj());
 				}
 			}
 		}
@@ -145,9 +147,23 @@ public class ParseHandler {
 	 */
 	public void handleChar(char c){
 		if(model == HandleModel.KEY){
-			keyBuilder.append(c);
+			if(key.length() == 0) {
+				if(CharacterUtil.isWhitespace(c)) {
+					return;
+				}else if(CharacterUtil.isQuotation(c)) {
+					return;
+				}
+			}
+			key.append(c);
 		}else if(model == HandleModel.VALUE){
-			valueBuilder.append(c);
+			if(value.length() == 0) {
+				if(CharacterUtil.isWhitespace(c)) {
+					return;
+				}else if(CharacterUtil.isQuotation(c)) {
+					return;
+				}
+			}
+			value.append(c);
 		}
 	}
 
@@ -166,14 +182,13 @@ public class ParseHandler {
 	 * @param c
 	 */
 	public void handleComma(char c){
-		ObjectEntity curObj = stackPeek();
-		if(keyEnough() && valueEnough() && curObj.isType(Map.class)){
-			ObjectUtil.put(curObj, keyGet(), valueGet());
+		if(keyEnough()){
+			ObjectUtil.put(stackPeek(), keyGet(), valueGet());
 			keyClear();
 			valueClear();
 			model = HandleModel.KEY;
-		}else if(valueEnough() && curObj.isType(Collection.class)){
-			ObjectUtil.add(curObj, valueGet());
+		}else if(valueEnough()){
+			ObjectUtil.add(stackPeek(), valueGet());
 			valueClear();
 			model = HandleModel.VALUE;
 		}

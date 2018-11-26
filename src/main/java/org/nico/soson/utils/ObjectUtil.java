@@ -16,18 +16,18 @@ import org.nico.soson.parser.exception.UnSupportedException;
 public class ObjectUtil {
 
 	public static void put(ObjectEntity op, String key, Object value){
-		if(op.isType(Map.class)){
-			((Map)op.getObj()).put(key, value);
-		}else{
-			throw new UnSupportedException("Unsupport class " + op.getType() + " to excute put method !");
-		}
+		//		if(op.isType(Map.class)){
+		((Map)op.getObj()).put(key, value);
+		//		}else{
+		//			throw new UnSupportedException("Unsupport class " + op.getType() + " to excute put method !");
+		//		}
 	}
-	
+
 	public static void add(ObjectEntity op, Object value){
-		if(op.isType(Collection.class)){
-			((Collection)op.getObj()).add(value);
-		}else{
-			throw new UnSupportedException("Unsupport class " + op.getType() + " to excute add method !");
-		}
+		//		if(op.isType(Collection.class)){
+		((Collection)op.getObj()).add(value);
+		//		}else{
+		//			throw new UnSupportedException("Unsupport class " + op.getType() + " to excute add method !");
+		//		}
 	}
 }
