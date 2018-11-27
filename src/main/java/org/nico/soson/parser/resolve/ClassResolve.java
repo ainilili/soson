@@ -5,6 +5,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nico.soson.entity.Complex;
+
 public class ClassResolve implements SosonResolve<List<Class<?>>>{
 
 	private Class<?> clazz;
@@ -18,7 +20,6 @@ public class ClassResolve implements SosonResolve<List<Class<?>>>{
 	
 	@Override
 	public List<Class<?>> excute() {
-		
 		lop(clazz.getGenericSuperclass());
 		
 		System.out.println(results);
@@ -26,9 +27,10 @@ public class ClassResolve implements SosonResolve<List<Class<?>>>{
 		return results;
 	}
 	
-	public void lop(Type type) {
+	private void lop(Type type) {
 		if(type instanceof ParameterizedType) {
-			results.add((Class<?>)((ParameterizedType) type).getRawType());
+			Class<?> curClass = (Class<?>)((ParameterizedType) type).getRawType();
+			add(curClass);
 			Type[] subTypes = ((ParameterizedType) type).getActualTypeArguments();
 			if(subTypes != null && subTypes.length > 0) {
 				for(Type subType: subTypes) {
@@ -36,7 +38,13 @@ public class ClassResolve implements SosonResolve<List<Class<?>>>{
 				}
 			}
 		}else if(type instanceof Class){
-			results.add((Class<?>) type);
+			add((Class<?>) type);
+		}
+	}
+	
+	private void add(Class<?> clazz) {
+		if(clazz != Complex.class) {
+			results.add(clazz);
 		}
 	}
 }
