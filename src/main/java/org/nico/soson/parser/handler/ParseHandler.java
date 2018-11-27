@@ -136,8 +136,10 @@ public class ParseHandler {
 			if(pre != null){
 				if(pre.isType(Map.class)){
 					ObjectUtil.put(pre, pre.getKey(), cur.getObj());
+					model = HandleModel.KEY;
 				}else if(pre.isType(Collection.class)){
 					ObjectUtil.add(pre, cur.getObj());
+					model = HandleModel.KEY;
 				}
 			}
 		}
