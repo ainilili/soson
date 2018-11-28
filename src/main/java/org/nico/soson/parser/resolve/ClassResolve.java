@@ -1,7 +1,9 @@
 package org.nico.soson.parser.resolve;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.List;
 import org.nico.soson.entity.Complex;
 import org.nico.soson.exception.UnSupportedException;
 import org.nico.soson.parser.resolve.ClassResolve.Genericity;
+
+import com.squareup.moshi.internal.Util.GenericArrayTypeImpl;
 
 public class ClassResolve implements SosonResolve<List<Genericity>>{
 
@@ -34,7 +38,7 @@ public class ClassResolve implements SosonResolve<List<Genericity>>{
 		if(type != null) {
 			Class<?> clazz = parserType(type);
 			if(clazz != Complex.class){
-				results.add(new Genericity(new Class<?>[]{clazz}));
+				results.add(new Genericity().setGenericityTypes(new Type[]{type}));
 			}
 			parserByTier(type);
 		}
@@ -44,11 +48,7 @@ public class ClassResolve implements SosonResolve<List<Genericity>>{
 		if(type instanceof ParameterizedType) {
 			Type[] subTypes = ((ParameterizedType) type).getActualTypeArguments();
 			if(subTypes != null && subTypes.length > 0) {
-				Class<?>[] array = new Class<?>[subTypes.length];
-				for(int index = 0; index < subTypes.length; index ++){
-					array[index] = parserType(subTypes[index]);
-				}
-				results.add(new Genericity(array));
+				results.add(new Genericity().setGenericityTypes(subTypes));
 				Type lastTypes = subTypes[subTypes.length - 1];
 				parserByTier(lastTypes);
 			}
@@ -56,10 +56,16 @@ public class ClassResolve implements SosonResolve<List<Genericity>>{
 	}
 	
 	private Class<?> parserType(Type type){
+		System.out.println(type);
 		if(type instanceof ParameterizedType) {
 			return (Class<?>)((ParameterizedType) type).getRawType();
 		}else if(type instanceof Class){
 			return (Class<?>) type;
+		}else if(type instanceof GenericArrayType){
+			Type t = ((GenericArrayType) type).getGenericComponentType();
+			return parserType(t);
+		}else if(type instanceof TypeVariable){
+			throw new UnSupportedException(type.getClass().getName());
 		}else{
 			throw new UnSupportedException(type.getClass().getName());
 		}
@@ -67,23 +73,20 @@ public class ClassResolve implements SosonResolve<List<Genericity>>{
 	
 	public static class Genericity{
 		
-		private Class<?>[] genericityArray;
-
-		public Genericity(Class<?>[] genericityArray) {
-			this.genericityArray = genericityArray;
+		private Type[] genericityTypes;
+		
+		public Type[] getGenericityTypes() {
+			return genericityTypes;
 		}
 
-		public Class<?>[] getGenericityArray() {
-			return genericityArray;
-		}
-
-		public void setGenericityArray(Class<?>[] genericityArray) {
-			this.genericityArray = genericityArray;
+		public Genericity setGenericityTypes(Type[] genericityTypes) {
+			this.genericityTypes = genericityTypes;
+			return this;
 		}
 
 		@Override
 		public String toString() {
-			return Arrays.toString(genericityArray) + "\n";
+			return Arrays.toString(genericityTypes) + "\n";
 		}
 		
 	}

@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import com.squareup.moshi.internal.Util.GenericArrayTypeImpl;
 
 public class LitterTest {
 	
@@ -142,39 +143,20 @@ public class LitterTest {
 	@Test
 	public void testComplex() throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		String json = "{\"a\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}],\"b\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}]}";
-		Map<String, List<User<String, List<Info>>>> map = Soson.toObject(json, new Complex<Map<String, List<User<String, List<Info>>>>>(){});
+//		Map<String, List<User<String, List<Info<Soson>[]>>>> map = Soson.toObject(json, new Complex<Map<String, List<User<String, List<Info<Soson>[]>>>>>(){});
+		
+		Info<Soson>[] map = Soson.toObject(json, new Complex<Info<Soson>[]>(){});
 		
 //		Map<String, List<User<String, List<Info>>>> map = JSON.parseObject(json, new TypeToken<Map<String, List<User<String, List<Info>>>>>(){}.getType());
 		
-		Type[] parentTypes = ((ParameterizedType)User.class.getGenericSuperclass()).getActualTypeArguments();
-		for(Type t: parentTypes) {
-			if(t instanceof ParameterizedType) {
-				System.out.println((Class<?>)((ParameterizedType) t).getRawType());
-			}else if(t instanceof Class){
-				System.out.println(t);
-			}else {
-				System.out.println(t);
-			}
-		}
+		System.out.println(User.class.getTypeParameters()[0]);
 		
 		Field field = User.class.getDeclaredField("map");
-		Type[] subTypes = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
-		for(Type t: subTypes) {
-			if(t instanceof ParameterizedType) {
-				System.out.println((Class<?>)((ParameterizedType) t).getRawType());
-			}else if(t instanceof Class){
-				System.out.println(t);
-			}else {
-				System.out.println(t);
-			}
-		}
 		
-		System.out.println(map);
+		
+//		System.out.println(map);
 		
 	}
 	
-	public static <K, V, T> T newIns(Class<T> t, Class<K> k, Class<V> v) throws InstantiationException, IllegalAccessException {
-		return (T)t.newInstance();
-	}
 	
 }
