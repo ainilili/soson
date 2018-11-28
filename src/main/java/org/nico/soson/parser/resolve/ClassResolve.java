@@ -31,11 +31,13 @@ public class ClassResolve implements SosonResolve<List<Genericity>>{
 	}
 	
 	private void parser(Type type) {
-		Class<?> clazz = parserType(type);
-		if(clazz != Complex.class){
-			results.add(new Genericity(new Class<?>[]{clazz}));
+		if(type != null) {
+			Class<?> clazz = parserType(type);
+			if(clazz != Complex.class){
+				results.add(new Genericity(new Class<?>[]{clazz}));
+			}
+			parserByTier(type);
 		}
-		parserByTier(type);
 	}
 	
 	private void parserByTier(Type type){

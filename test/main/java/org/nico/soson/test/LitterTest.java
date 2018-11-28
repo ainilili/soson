@@ -1,5 +1,9 @@
 package org.nico.soson.test;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -7,13 +11,16 @@ import org.junit.Test;
 import org.nico.noson.Noson;
 import org.nico.soson.Soson;
 import org.nico.soson.entity.Complex;
-import org.nico.soson.entity.ObjectEntity;
-import org.nico.soson.parser.manager.ObjectManager;
-import org.nico.soson.utils.ObjectUtil;
+import org.nico.soson.entity.Info;
+import org.nico.soson.entity.User;
+import org.nico.soson.exception.UnSupportedException;
 import org.nico.soson.utils.QuotationUtil;
 
 import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 
 public class LitterTest {
 	
@@ -79,6 +86,21 @@ public class LitterTest {
 		
 		long end = System.nanoTime();
 		System.out.println((end - start)/1000000 + "ms");
+	}
+	
+//	@Test
+	public void testMoshi() throws IOException{
+		
+		System.out.println("Moshi：");
+		Moshi moshi = new Moshi.Builder().build();
+		Type type = Types.newParameterizedType(List.class, Map.class);
+		JsonAdapter<List<Map<String, Object>>> adapter = moshi.adapter(type);
+		long start = System.nanoTime();
+		
+		List<Map<String, Object>> list = adapter.fromJson(json);
+		
+		long end = System.nanoTime();
+		System.out.println((end - start)/1000000 + "ms");
 		System.out.println(list.get(0));
 	}
 	
@@ -86,9 +108,14 @@ public class LitterTest {
 	public void testTest(){
 		System.out.println("Test：");
 		long start = System.currentTimeMillis();
+//		List<Object> list = new ArrayList<Object>(10);
+		String str = "a:b:c:d";
 		for(int index = 0; index < count; index ++) {
-			ObjectEntity entity = ObjectManager.getCollection();
-			ObjectUtil.add(entity, index);
+//			Map<Object, Object> map = new HashMap<>();
+//			map.put(index, index);
+//			list.add(map);
+//			new ObjectEntity(new HashMap<>(), Map.class);
+			String.valueOf(index).substring(0, 1);
 		}
 		long end = System.currentTimeMillis();
 		System.out.println((end - start) + "ms");
@@ -113,10 +140,41 @@ public class LitterTest {
 	}
 
 	@Test
-	public void testComplex() {
-		String json = "{\"a\":[1,2,3],\"b\":[4,5,6]}";
-		Map<String, List<Integer>> map = Soson.toObject(json, new Complex<Map<String, List<Integer>>>(){});
+	public void testComplex() throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException {
+		String json = "{\"a\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}],\"b\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}]}";
+		Map<String, List<User<String, List<Info>>>> map = Soson.toObject(json, new Complex<Map<String, List<User<String, List<Info>>>>>(){});
+		
+//		Map<String, List<User<String, List<Info>>>> map = JSON.parseObject(json, new TypeToken<Map<String, List<User<String, List<Info>>>>>(){}.getType());
+		
+		Type[] parentTypes = ((ParameterizedType)User.class.getGenericSuperclass()).getActualTypeArguments();
+		for(Type t: parentTypes) {
+			if(t instanceof ParameterizedType) {
+				System.out.println((Class<?>)((ParameterizedType) t).getRawType());
+			}else if(t instanceof Class){
+				System.out.println(t);
+			}else {
+				System.out.println(t);
+			}
+		}
+		
+		Field field = User.class.getDeclaredField("map");
+		Type[] subTypes = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
+		for(Type t: subTypes) {
+			if(t instanceof ParameterizedType) {
+				System.out.println((Class<?>)((ParameterizedType) t).getRawType());
+			}else if(t instanceof Class){
+				System.out.println(t);
+			}else {
+				System.out.println(t);
+			}
+		}
 		
 		System.out.println(map);
+		
 	}
+	
+	public static <K, V, T> T newIns(Class<T> t, Class<K> k, Class<V> v) throws InstantiationException, IllegalAccessException {
+		return (T)t.newInstance();
+	}
+	
 }

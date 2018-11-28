@@ -1,6 +1,7 @@
 package org.nico.soson.parser.handler;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -57,13 +58,11 @@ public class ParseHandler {
 	}
 	
 	public String keyGet(){
-		String k = key.value();
-		return k;
+		return key.value();
 	}
 	
 	public Object valueGet(){
-		String v = value.value();
-		return v;
+		return value.value();
 	}
 
 	/**
@@ -139,7 +138,7 @@ public class ParseHandler {
 					model = HandleModel.KEY;
 				}else if(pre.isType(Collection.class)){
 					ObjectUtil.add(pre, cur.getObj());
-					model = HandleModel.KEY;
+					model = HandleModel.VALUE;
 				}
 			}
 		}
