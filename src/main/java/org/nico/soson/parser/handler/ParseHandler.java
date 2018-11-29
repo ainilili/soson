@@ -1,8 +1,6 @@
 package org.nico.soson.parser.handler;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -10,6 +8,7 @@ import org.nico.soson.entity.HandleModel;
 import org.nico.soson.entity.KVEntity;
 import org.nico.soson.entity.ObjectEntity;
 import org.nico.soson.parser.manager.ObjectManager;
+import org.nico.soson.parser.resolve.ClassResolve.Genericity;
 import org.nico.soson.utils.CharacterUtil;
 import org.nico.soson.utils.ObjectUtil;
 
@@ -22,7 +21,7 @@ public class ParseHandler {
 
 	private Stack<ObjectEntity> stack;
 
-	private List<Class<?>> dic;
+	private Genericity gtree;
 
 	private HandleModel model;
 
@@ -34,9 +33,9 @@ public class ParseHandler {
 	
 	private ObjectEntity cur;
 	
-	public ParseHandler(List<Class<?>> dic) {
+	public ParseHandler(Genericity gtree) {
 		this.stack = new Stack<>();
-		this.dic = dic;
+		this.gtree = gtree;
 		this.key = new KVEntity();
 		this.value = new KVEntity();
 	}
@@ -102,7 +101,7 @@ public class ParseHandler {
 	 */
 	public void handleBracket(char c){
 		pre = stackPeek();
-		cur = ObjectManager.getCollection();
+		cur = ObjectManager.getInstance(gtree.getRawType());
 		stack.push(cur);
 		model = HandleModel.VALUE;
 		if(pre != null){

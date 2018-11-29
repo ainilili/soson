@@ -15,14 +15,29 @@ public class ObjectEntity {
 	
 	private Class<?> type;
 	
+	private Class<?> cast;
+	
 	private String key;
 	
 	public ObjectEntity(Object obj, Class<?> type) {
-		super();
 		this.obj = obj;
 		this.type = type;
 	}
 	
+	public ObjectEntity(Object obj, Class<?> type, Class<?> cast) {
+		this.obj = obj;
+		this.type = type;
+		this.cast = cast;
+	}
+
+	public final Class<?> getCast() {
+		return cast;
+	}
+
+	public final void setCast(Class<?> cast) {
+		this.cast = cast;
+	}
+
 	public String getKey() {
 		return key;
 	}

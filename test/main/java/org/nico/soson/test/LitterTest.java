@@ -143,15 +143,12 @@ public class LitterTest {
 	@Test
 	public void testComplex() throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		String json = "{\"a\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}],\"b\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}]}";
-//		Map<String, List<User<String, List<Info<Soson>[]>>>> map = Soson.toObject(json, new Complex<Map<String, List<User<String, List<Info<Soson>[]>>>>>(){});
+		Map<String, List<User<String, List<Info<Soson>[]>>>> map = Soson.toObject(json, new Complex<Map<String, List<User<String, List<Info<Soson>[]>>>>>(){});
 		
-		Info<Soson>[] map = Soson.toObject(json, new Complex<Info<Soson>[]>(){});
+		
+//		Info<Soson>[] map = Soson.toObject(json, new Complex<Info<Soson>[]>(){});
 		
 //		Map<String, List<User<String, List<Info>>>> map = JSON.parseObject(json, new TypeToken<Map<String, List<User<String, List<Info>>>>>(){}.getType());
-		
-		System.out.println(User.class.getTypeParameters()[0]);
-		
-		Field field = User.class.getDeclaredField("map");
 		
 		
 //		System.out.println(map);

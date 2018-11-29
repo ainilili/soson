@@ -1,7 +1,5 @@
 package org.nico.soson.parser;
 
-import java.util.List;
-
 import org.nico.soson.feature.SerializeFeature;
 import org.nico.soson.parser.handler.ParseHandler;
 import org.nico.soson.parser.resolve.ClassResolve;
@@ -13,9 +11,9 @@ public class DefaultParser extends AbstractParser{
 	@Override
 	public Object parse(char[] chars, Class<?> clazz, SerializeFeature... features) {
 		
-		List<Genericity> dic = new ClassResolve(clazz).excute();
+		Genericity gtree = new ClassResolve(clazz).excute();
 		
-		ParseHandler handler = new ParseHandler(null);
+		ParseHandler handler = new ParseHandler(gtree);
 		QuotationUtil qu = new QuotationUtil();
 		for(int index = 0; index < chars.length; index ++){
 			char c = chars[index];
