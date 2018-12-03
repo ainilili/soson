@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,9 @@ import org.nico.soson.entity.Complex;
 import org.nico.soson.entity.Info;
 import org.nico.soson.entity.User;
 import org.nico.soson.exception.UnSupportedException;
+import org.nico.soson.parser.resolve.ClassResolve;
+import org.nico.soson.parser.resolve.ClassResolve.Genericity;
+import org.nico.soson.utils.GenericityUtil;
 import org.nico.soson.utils.QuotationUtil;
 
 import com.alibaba.fastjson.JSON;
@@ -142,17 +146,38 @@ public class LitterTest {
 
 	@Test
 	public void testComplex() throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException {
-		String json = "{\"a\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}],\"b\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}]}";
-		Map<String, List<User<String, List<Info<Soson>[]>>>> map = Soson.toObject(json, new Complex<Map<String, List<User<String, List<Info<Soson>[]>>>>>(){});
+//		String json = "{\"a\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}],\"b\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}]}";
+//		Map<String, List<User<String, List<Info<Soson>[]>>>> map = Soson.toObject(json, new Complex<Map<String, List<User<String, List<Info<Soson>[]>>>>>(){});
 		
 		
-//		Info<Soson>[] map = Soson.toObject(json, new Complex<Info<Soson>[]>(){});
+		String json = "{\"map\":{\"list\":[{\"name\":\"nico\",\"data\":{\"name\":\"soson\"}}]}}";
+		User<String, List<Info<Info<?>>>> map = Soson.toObject(json, new Complex<User<String, List<Info<Info<?>>>>>(){});
 		
-//		Map<String, List<User<String, List<Info>>>> map = JSON.parseObject(json, new TypeToken<Map<String, List<User<String, List<Info>>>>>(){}.getType());
+		System.out.println(map);
+		System.out.println(map.getMap().get("list"));
+		
+	}
+	
+	public static void main(String[] args) throws NoSuchFieldException, SecurityException {
+		User<String, List<Info<Info<?>>>> u = new User<String, List<Info<Info<?>>>>();
+		Field f = u.getClass().getDeclaredField("map");
+		Type t = f.getGenericType();
+		
+		ParameterizedType pt = (ParameterizedType) t;
+		System.out.println(pt.getActualTypeArguments()[0].getTypeName());
+		
+		Genericity gu = new ClassResolve(new Complex<User<String, List<Info<Info<?>>>>>(){}.getClass()).excute();
 		
 		
-//		System.out.println(map);
+		Genericity gm = GenericityUtil.parser(t);
+		Genericity[] gs = gm.getGenericities();
+		for(int index = 0; index < gs.length; index ++) {
+			if(gs[index].getRawType() == null) {
+				gs[index] = gu.getTagGenericity(gu.getGenericityTags()[index].getTypeName());
+			}
+		}
 		
+		System.out.println(Arrays.toString(gm.getGenericities()));
 	}
 	
 	

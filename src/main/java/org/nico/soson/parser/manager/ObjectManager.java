@@ -18,15 +18,15 @@ import org.nico.soson.exception.InstanceException;
 public class ObjectManager {
 
 	public static ObjectEntity getMap() {
-		return new ObjectEntity(new LinkedHashMap<String, Object>(), Map.class);
+		return new ObjectEntity(new LinkedHashMap<String, Object>(), Map.class, false);
 	}
 	
 	public static ObjectEntity getCollection() {
-		return new ObjectEntity(new ArrayList<Object>(), List.class);
+		return new ObjectEntity(new ArrayList<Object>(), List.class, false);
 	}
 	
 	public static ObjectEntity getArray() {
-		return new ObjectEntity(new ArrayList<Object>(), List.class, Array.class);
+		return new ObjectEntity(new ArrayList<Object>(), List.class, Array.class, false);
 	}
 	
 	public static ObjectEntity getInstance(Class<?> clazz) {
@@ -38,7 +38,7 @@ public class ObjectManager {
 			}else if(Array.class.isAssignableFrom(clazz)) {
 				return getArray();
 			}else {
-				return new ObjectEntity(clazz.newInstance(), clazz);
+				return new ObjectEntity(clazz.newInstance(), clazz, true);
 			}
 		} catch (InstantiationException e) {
 			throw new InstanceException(e);

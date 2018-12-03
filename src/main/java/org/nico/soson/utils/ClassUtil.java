@@ -57,4 +57,8 @@ public class ClassUtil {
 				&& ! isNumber(clazz);
 	}
 	
+	public static boolean hasGenericity(Class<?> clazz) {
+		return clazz.getGenericSuperclass() != null;
+	}
+	
 }

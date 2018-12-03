@@ -2,17 +2,16 @@ package org.nico.soson.entity;
 
 import java.util.Map;
 
-public class User<K, V> {
+public class User<K, V>{
 	
-	private Map<K, V>[] map;
+	private Map<K, V> map;
 
-	public Map<K, V>[] getMap() {
+	public final Map<K, V> getMap() {
 		return map;
 	}
 
-	public void setMap(Map<K, V>[] map) {
+	public final void setMap(Map<K, V> map) {
 		this.map = map;
 	}
 
-	
 }
