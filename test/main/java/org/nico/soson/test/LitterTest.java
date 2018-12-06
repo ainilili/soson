@@ -21,7 +21,9 @@ import org.nico.soson.utils.GenericityUtil;
 import org.nico.soson.utils.QuotationUtil;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
@@ -149,36 +151,33 @@ public class LitterTest {
 //		String json = "{\"a\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}],\"b\":[{\"map\":{\"list\":[{\"name\":\"nico\"}]}}]}";
 //		Map<String, List<User<String, List<Info<Soson>[]>>>> map = Soson.toObject(json, new Complex<Map<String, List<User<String, List<Info<Soson>[]>>>>>(){});
 		
+		Gson gson = new Gson();
 		
-		String json = "{\"map\":{\"list\":[{\"name\":\"nico\",\"data\":{\"name\":\"soson\"}}]}}";
-		User<String, List<Info<Info<?>>>> map = Soson.toObject(json, new Complex<User<String, List<Info<Info<?>>>>>(){});
+//		String json = "{a:{b:[{c:d,e:[[{c:q},{c:q}]]}]}}";
+		String json = "{a:{b:[{c:d,e:[[[]]]}]}}";
+		User<String, List<Info<Info<?>[][][]>>> map = Soson.toObject(json, new Complex<User<String, List<Info<Info<?>[][][]>>>>(){});
+//		User<String, List<Info<Info<?>[][]>>> map = gson.fromJson(json, new TypeToken<User<String, List<Info<Info<?>[][]>>>>() {}.getType());
+//		User<String, List<Info<Info<?>[]>>> map = JSON.parseObject(json, new TypeReference<User<String, List<Info<Info<?>[]>>>>() {}.getType());
+		System.out.println(map.getClass());
+		System.out.println(map.getA().getClass());
+		System.out.println(map.getA().get("b").getClass());
+		System.out.println(map.getA().get("b").get(0).getClass());
+		System.out.println(map.getA().get("b").get(0).getE().getClass());
+		System.out.println(map.getA().get("b").get(0).getE()[0].getClass());
+		System.out.println(map.getA().get("b").get(0).getE()[0][0].getClass());
 		
-		System.out.println(map);
-		System.out.println(map.getMap().get("list"));
+//		String json = "{e:[[]]}";
+//		Info<Info<?>[][]> map = Soson.toObject(json, new Complex<Info<Info<?>[][]>>(){});
+//		
+//		System.out.println(map);
+//		System.out.println(map.getE());
+//		System.out.println(map.getE()[0]);
+		
+//		String json = "{map:[1,2,3]}";
+//		
+//		Map<String, String[]> m = Soson.toObject(json, new Complex<Map<String, String[]>>() {});
+//		System.out.println(m.get("map"));
 		
 	}
-	
-	public static void main(String[] args) throws NoSuchFieldException, SecurityException {
-		User<String, List<Info<Info<?>>>> u = new User<String, List<Info<Info<?>>>>();
-		Field f = u.getClass().getDeclaredField("map");
-		Type t = f.getGenericType();
-		
-		ParameterizedType pt = (ParameterizedType) t;
-		System.out.println(pt.getActualTypeArguments()[0].getTypeName());
-		
-		Genericity gu = new ClassResolve(new Complex<User<String, List<Info<Info<?>>>>>(){}.getClass()).excute();
-		
-		
-		Genericity gm = GenericityUtil.parser(t);
-		Genericity[] gs = gm.getGenericities();
-		for(int index = 0; index < gs.length; index ++) {
-			if(gs[index].getRawType() == null) {
-				gs[index] = gu.getTagGenericity(gu.getGenericityTags()[index].getTypeName());
-			}
-		}
-		
-		System.out.println(Arrays.toString(gm.getGenericities()));
-	}
-	
 	
 }

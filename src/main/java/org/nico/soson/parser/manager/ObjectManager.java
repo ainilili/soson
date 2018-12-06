@@ -25,8 +25,8 @@ public class ObjectManager {
 		return new ObjectEntity(new ArrayList<Object>(), List.class, false);
 	}
 	
-	public static ObjectEntity getArray() {
-		return new ObjectEntity(new ArrayList<Object>(), List.class, Array.class, false);
+	public static ObjectEntity getArray(Class<?> arrayClass) {
+		return new ObjectEntity(new ArrayList<Object>(), List.class, arrayClass, false);
 	}
 	
 	public static ObjectEntity getInstance(Class<?> clazz) {
@@ -35,8 +35,8 @@ public class ObjectManager {
 				return getMap();
 			}else if(Collection.class.isAssignableFrom(clazz)) {
 				return getCollection();
-			}else if(Array.class.isAssignableFrom(clazz)) {
-				return getArray();
+			}else if(clazz.isArray()) {
+				return getArray(clazz);
 			}else {
 				return new ObjectEntity(clazz.newInstance(), clazz, true);
 			}

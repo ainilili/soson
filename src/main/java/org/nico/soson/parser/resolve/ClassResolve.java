@@ -27,17 +27,22 @@ public class ClassResolve implements SosonResolve<Genericity>{
 	
 	@Override
 	public Genericity excute() {
-		genericityTree = parser(clazz.getGenericSuperclass());
+		Type type = clazz.getGenericSuperclass();
+		if(type instanceof ParameterizedType) {
+			genericityTree = GenericityUtil.parser(type);
+		}else {
+			genericityTree = GenericityUtil.parser(clazz);
+		}
 		return genericityTree;
 	}
 	
-	private Genericity parser(Type type) {
-		if(type == null) {
-			return new Genericity().setRawType(clazz).setGenericityTags(clazz.getTypeParameters());
-		}else {
-			return GenericityUtil.parser(type);
-		}
-	}
+//	private Genericity parser(Type type) {
+//		if(type == null) {
+//			return new Genericity().setRawType(clazz).setGenericityTags(clazz.getTypeParameters());
+//		}else {
+//			return GenericityUtil.parser(type);
+//		}
+//	}
 	
 	public static class Genericity{
 		

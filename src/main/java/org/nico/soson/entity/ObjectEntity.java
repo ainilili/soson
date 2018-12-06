@@ -1,6 +1,8 @@
 package org.nico.soson.entity;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Map;
 
 import org.nico.soson.parser.resolve.ClassResolve.Genericity;
@@ -79,6 +81,35 @@ public class ObjectEntity {
 
 	public boolean isType(Class<?> parent){
 		return parent.isAssignableFrom(this.type);
+	}
+	
+	public Object target() {
+		if(type == cast) {
+			return obj;
+		}else {
+			if(cast.isArray()) {
+				Collection<?> list = ((Collection<?>)obj);
+				Class<?> c = null;
+				for(Object o: list) {
+					c = o.getClass();
+					break;
+				}
+				Object array = null;
+				if(c != null) {
+					array = Array.newInstance(c, list.size());
+				}else {
+					array = Array.newInstance(cast.getComponentType(), list.size());
+				}
+				
+				int index = 0;
+				for(Object obj: list) {
+					Array.set(array, index ++, obj);
+				}
+				return array;
+			}else {
+				return null;
+			}
+		}
 	}
 
 	@Override

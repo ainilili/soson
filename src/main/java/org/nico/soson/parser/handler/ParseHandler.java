@@ -1,7 +1,7 @@
 package org.nico.soson.parser.handler;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
@@ -17,9 +17,7 @@ import org.nico.soson.entity.ObjectEntity;
 import org.nico.soson.exception.InstanceException;
 import org.nico.soson.exception.ReflectException;
 import org.nico.soson.parser.manager.ObjectManager;
-import org.nico.soson.parser.resolve.ClassResolve;
 import org.nico.soson.parser.resolve.ClassResolve.Genericity;
-import org.nico.soson.utils.ArrayUtil;
 import org.nico.soson.utils.CharacterUtil;
 import org.nico.soson.utils.GenericityUtil;
 import org.nico.soson.utils.ObjectUtil;
@@ -145,24 +143,59 @@ public class ParseHandler {
 				Field field = objectFieldCache.get(pre.getType()).get(pre.getKey());
 				if(field != null) {
 					Class<?> fieldType = field.getType();
-					cur = getInstance(fieldType);
 					
 					//instancing new genericity tree
 					//push new genericity into table
 					Type genericType = field.getGenericType();
 					if(genericType == null) {
-						Genericity genericity = new Genericity();
-						genericity.setRawType(field.getType());
-						table.push(genericity);
+						cur = getInstance(fieldType);
+						table.push(new Genericity().setRawType(fieldType));
+					}else if(genericType instanceof TypeVariable){
+						Genericity g = table.peek().getTagGenericity(((TypeVariable)genericType).getTypeName());
+						if(g.isArray()) {
+							cur = getInstance(Array.newInstance(g.getGenericities()[0].getRawType(), 0).getClass());
+						}else {
+							cur = getInstance(g.getRawType());
+						}
+						table.push(g);
 					}else {
+						cur = getInstance(fieldType);
 						Genericity genericity = GenericityUtil.parser(genericType);
+						Genericity[] childs = genericity.getGenericities();
+						for(int index = 0; index < childs.length; index ++) {
+							if(childs[index].getRawType() == null) {
+								childs[index] = table.peek().getTagGenericity(table.peek().getGenericityTags()[index].getTypeName());
+							}
+						}
 						table.push(genericity);
 					}
 				}else {
 					throw new InstanceException("The field " + pre + " for " + pre.getType() + " was not found !");
 				}
 			}else {
-				cur = getInstance(locaterType);
+				if(table.peek().isBean()) {
+					cur = getInstance(table.peek().getRawType());
+				}else {
+					Genericity g = table.peek();
+					if(g.getGenericities() != null) {
+						Genericity target = null;
+						if(g.getGenericities().length == 1) {
+							target = g.getGenericities()[0];
+						}else if(g.getGenericities().length == 2){
+							target = g.getGenericities()[1];
+						}
+						if(target != null) {
+							if(target.isArray()) {
+								cur = getInstance(Array.newInstance(target.getGenericities()[0].getRawType(), 0).getClass());
+							}else {
+								cur = getInstance(target.getRawType());
+							}
+						}
+						table.push(target);
+					}else {
+						cur = getInstance(locaterType);
+					}
+				}
 			}
 		}else {
 			cur = getInstance(table.peek().getRawType());
@@ -190,16 +223,18 @@ public class ParseHandler {
 			cur = stackPop();
 			pre = stackPeek();
 			if(pre != null){
+				Object castObj = cur.target();
+				
 				if(pre.isType(Map.class)){
-					ObjectUtil.put(pre, pre.getKey(), cur.getObj());
+					ObjectUtil.put(pre, pre.getKey(), castObj);
 					model = HandleModel.KEY;
 				}else if(pre.isType(Collection.class)){
-					ObjectUtil.add(pre, cur.getObj());
+					ObjectUtil.add(pre, castObj);
 					model = HandleModel.VALUE;
 				}else if(pre.isBean()) {
 					Field field = objectFieldCache.get(pre.getType()).get(pre.getKey());
 					try {
-						field.set(pre.getObj(), cur.getObj());
+						field.set(pre.getObj(), castObj);
 					} catch (IllegalArgumentException e) {
 						throw new ReflectException(e);
 					} catch (IllegalAccessException e) {
@@ -263,7 +298,7 @@ public class ParseHandler {
 
 	public Object getTarget(){
 		if(! stack.isEmpty()){
-			return stack.get(0).getObj();
+			return stack.get(0).target();
 		}else{
 			return null;
 		}
@@ -282,16 +317,6 @@ public class ParseHandler {
 	
 	public ObjectEntity stackPush(ObjectEntity oe) {
 		stack.push(oe);
-		
-		Genericity point = table.peek();
-		Genericity[] subGenericities = point.getGenericities();
-		if(subGenericities != null) {
-			if(point.isMap()) {
-				table.push(subGenericities[1]);
-			}else if(point.isCollection()) {
-				table.push(subGenericities[0]);
-			}
-		}
 		return oe;
 	}
 

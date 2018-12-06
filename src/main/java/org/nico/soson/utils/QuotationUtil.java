@@ -21,7 +21,8 @@ public class QuotationUtil {
 					|| lastValidChar == '[') {
 				if(! CharacterUtil.isWhitespace(currentChar)) {
 					if(! CharacterUtil.isQuotation(currentChar) 
-							&& ! CharacterUtil.isObjectStartMark(currentChar)) {
+							&& ! CharacterUtil.isObjectStartMark(currentChar)
+							&& ! CharacterUtil.isObjectEndMark(currentChar)) {
 						closeFlag = ! closeFlag;
 					}else if(CharacterUtil.isQuotation(currentChar)){
 						lastValidChar = currentChar;

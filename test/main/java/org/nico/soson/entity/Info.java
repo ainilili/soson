@@ -2,24 +2,25 @@ package org.nico.soson.entity;
 
 public class Info<T> {
 
-	private String name;
+	private String c;
 
-	private T data;
+	private T e;
+
+	public final String getC() {
+		return c;
+	}
+
+	public final void setC(String c) {
+		this.c = c;
+	}
+
+	public final T getE() {
+		return e;
+	}
+
+	public final void setE(T e) {
+		this.e = e;
+	}
 	
-	public T getData() {
-		return data;
-	}
-
-	public void setData(T data) {
-		this.data = data;
-	}
-
-	public final String getName() {
-		return name;
-	}
-
-	public final void setName(String name) {
-		this.name = name;
-	}
 	
 }

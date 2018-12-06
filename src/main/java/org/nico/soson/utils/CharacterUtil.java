@@ -13,4 +13,8 @@ public class CharacterUtil {
 	public static boolean isObjectStartMark(char c) {
 		return c == '{' || c == '[';
 	}
+	
+	public static boolean isObjectEndMark(char c) {
+		return c == '}' || c == ']';
+	}
 }

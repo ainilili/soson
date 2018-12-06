@@ -1,13 +1,10 @@
 package org.nico.soson.utils;
 
-import java.util.ArrayList;
+import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.nico.soson.entity.ObjectEntity;
-import org.nico.soson.exception.UnSupportedException;
 
 /** 
  * 
@@ -18,18 +15,28 @@ import org.nico.soson.exception.UnSupportedException;
 public class ObjectUtil {
 
 	public static void put(ObjectEntity op, String key, Object value){
-		//		if(op.isType(Map.class)){
-		((Map)op.getObj()).put(key, value);
-		//		}else{
-		//			throw new UnSupportedException("Unsupport class " + op.getType() + " to excute put method !");
-		//		}
+		if(op.isBean()) {
+			try {
+				Field f = op.getType().getDeclaredField(key);
+				try {
+					f.setAccessible(true);
+					f.set(op.getObj(), value);
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			} catch (NoSuchFieldException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			}
+		}else {
+			((Map)op.getObj()).put(key, value);
+		}
 	}
 
 	public static void add(ObjectEntity op, Object value){
-		//		if(op.isType(Collection.class)){
 		((Collection)op.getObj()).add(value);
-		//		}else{
-		//			throw new UnSupportedException("Unsupport class " + op.getType() + " to excute add method !");
-		//		}
 	}
 }

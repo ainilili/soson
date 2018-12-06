@@ -4,14 +4,16 @@ import java.util.Map;
 
 public class User<K, V>{
 	
-	private Map<K, V> map;
+	private Map<K, V> a;
 
-	public final Map<K, V> getMap() {
-		return map;
+	public final Map<K, V> getA() {
+		return a;
 	}
 
-	public final void setMap(Map<K, V> map) {
-		this.map = map;
+	public final void setA(Map<K, V> a) {
+		this.a = a;
 	}
+
+	
 
 }
