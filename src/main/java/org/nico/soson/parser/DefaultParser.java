@@ -11,9 +11,9 @@ public class DefaultParser extends AbstractParser{
 	@Override
 	public Object parse(char[] chars, Class<?> clazz, SerializeFeature... features) {
 		
-		Genericity gtree = new ClassResolve(clazz).excute();
+		Genericity genericRoot = new ClassResolve(clazz).excute();
 		
-		ParseHandler handler = new ParseHandler(gtree);
+		ParseHandler handler = new ParseHandler(genericRoot);
 		QuotationUtil qu = new QuotationUtil();
 		for(int index = 0; index < chars.length; index ++){
 			char c = chars[index];

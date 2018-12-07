@@ -2,6 +2,7 @@ package org.nico.soson.parser.handler;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
@@ -9,7 +10,8 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.nico.soson.cache.Cache;
-import org.nico.soson.cache.ObjectFieldCache;
+import org.nico.soson.cache.helper.FieldCacheHelper;
+import org.nico.soson.cache.impl.FieldCache;
 import org.nico.soson.entity.HandleModel;
 import org.nico.soson.entity.KVEntity;
 import org.nico.soson.entity.LocaterType;
@@ -31,7 +33,7 @@ public class ParseHandler {
 
 	private Stack<ObjectEntity> stack;
 
-	private Stack<Genericity> table;
+	private Genericity genericRoot;
 
 	private HandleModel model;
 
@@ -43,12 +45,9 @@ public class ParseHandler {
 	
 	private ObjectEntity cur;
 	
-	private Cache<Class<?>, Map<String, Field>> objectFieldCache = new ObjectFieldCache();
-	
-	public ParseHandler(Genericity g) {
+	public ParseHandler(Genericity genericRoot) {
 		this.stack = new Stack<>();
-		this.table = new Stack<>();
-		this.table.push(g);
+		this.genericRoot = genericRoot;
 		this.key = new KVEntity();
 		this.value = new KVEntity();
 	}
@@ -70,29 +69,37 @@ public class ParseHandler {
 	}
 	
 	public String keyGet(){
-		return key.value();
+		String k = key.value();
+		key.clear();
+		return k;
 	}
 	
 	public Object valueGet(){
-		return value.value();
+		String v = value.value();
+		value.clear();
+		return v;
 	}
 	
 	public ObjectEntity getInstance(LocaterType lt) {
 		if(pre != null && pre.isBean()) {
-			return ObjectManager.getInstance(pre.getType());
+			return ObjectManager.getInstance(pre.getType(), null);
 		}else {
 			if(lt == LocaterType.BRACE) {
-				return ObjectManager.getMap();
+				return ObjectManager.getMap(null);
 			}else if(lt == LocaterType.BRACKET) {
-				return ObjectManager.getCollection();
+				return ObjectManager.getCollection(null);
 			}else {
 				throw new InstanceException("Generic types are instantiated as empty");
 			}
 		}
 	}
 	
+	public ObjectEntity getInstance(Genericity generic) {
+		return ObjectManager.getInstance(generic.getRawType(), generic);
+	}
+	
 	public ObjectEntity getInstance(Class<?> clazz) {
-		return ObjectManager.getInstance(clazz);
+		return ObjectManager.getInstance(clazz, null);
 	}
 
 	/**
@@ -134,71 +141,58 @@ public class ParseHandler {
 		//current genericity is java bean
 		//special handle --> get java bean field type
 		pre = stackPeek();
-		if(pre != null){
-			if(keyEnough()){
-				pre.setKey(keyGet());
-				keyClear();
-			}
+		if(pre == null) {
+			cur = genericRoot == null ? getInstance(locaterType) : getInstance(genericRoot);
+		}else {
+			if(keyEnough()) pre.setKey(keyGet());
 			if(pre.isBean()) {
-				Field field = objectFieldCache.get(pre.getType()).get(pre.getKey());
-				if(field != null) {
-					Class<?> fieldType = field.getType();
-					
-					//instancing new genericity tree
-					//push new genericity into table
-					Type genericType = field.getGenericType();
-					if(genericType == null) {
-						cur = getInstance(fieldType);
-						table.push(new Genericity().setRawType(fieldType));
-					}else if(genericType instanceof TypeVariable){
-						Genericity g = table.peek().getTagGenericity(((TypeVariable)genericType).getTypeName());
-						if(g.isArray()) {
-							cur = getInstance(Array.newInstance(g.getGenericities()[0].getRawType(), 0).getClass());
-						}else {
-							cur = getInstance(g.getRawType());
+				Field targetField = FieldCacheHelper.getField(pre.getType(), pre.getKey());
+				if(targetField != null) {
+					Genericity preGenericity = pre.getGeneric();
+					Class<?> targetFieldType = targetField.getType();
+					Type targetFieldGenericType = targetField.getGenericType();
+					if(targetFieldGenericType == null) {
+						cur = getInstance(targetFieldType);
+					}else if(targetFieldGenericType instanceof TypeVariable){
+						Genericity childGenericity = preGenericity.getTagGenericity(((TypeVariable<?>) targetFieldGenericType).getTypeName());
+						if(childGenericity.isArray()) {
+							childGenericity.setRawType(Array.newInstance(childGenericity.getGenericities()[0].getRawType(), 0).getClass());
 						}
-						table.push(g);
-					}else {
-						cur = getInstance(fieldType);
-						Genericity genericity = GenericityUtil.parser(genericType);
+						cur = getInstance(childGenericity);
+					}else if(targetFieldGenericType instanceof ParameterizedType){
+						Genericity genericity = GenericityUtil.parser(targetFieldGenericType);
 						Genericity[] childs = genericity.getGenericities();
 						for(int index = 0; index < childs.length; index ++) {
-							if(childs[index].getRawType() == null) {
-								childs[index] = table.peek().getTagGenericity(table.peek().getGenericityTags()[index].getTypeName());
+							if(childs[index] == null) {
+								childs[index] = preGenericity.getTagGenericity(preGenericity.getGenericityTags()[index].getTypeName());
 							}
 						}
-						table.push(genericity);
+						cur = getInstance(genericity);
 					}
 				}else {
 					throw new InstanceException("The field " + pre + " for " + pre.getType() + " was not found !");
 				}
 			}else {
-				if(table.peek().isBean()) {
-					cur = getInstance(table.peek().getRawType());
-				}else {
-					Genericity g = table.peek();
-					if(g.getGenericities() != null) {
-						Genericity target = null;
-						if(g.getGenericities().length == 1) {
-							target = g.getGenericities()[0];
-						}else if(g.getGenericities().length == 2){
-							target = g.getGenericities()[1];
+				Genericity generic = pre.getGeneric();
+				if(generic != null 
+						&& generic.getGenericities() != null) {
+					if(generic.isArray()) {
+						Genericity childGenericity = generic.getGenericities()[0];
+						if(childGenericity.isArray()) {
+							childGenericity.setRawType(Array.newInstance(childGenericity.getGenericities()[0].getRawType(), 0).getClass());
 						}
-						if(target != null) {
-							if(target.isArray()) {
-								cur = getInstance(Array.newInstance(target.getGenericities()[0].getRawType(), 0).getClass());
-							}else {
-								cur = getInstance(target.getRawType());
-							}
-						}
-						table.push(target);
+						cur = getInstance(generic.getGenericities()[0]);
 					}else {
-						cur = getInstance(locaterType);
+						if(pre.isMap()) {
+							cur = getInstance(generic.getGenericities()[1]);
+						}else if(pre.isCollection()){
+							cur = getInstance(generic.getGenericities()[0]);
+						}
 					}
+				}else {
+					cur = getInstance(locaterType);
 				}
 			}
-		}else {
-			cur = getInstance(table.peek().getRawType());
 		}
 		stackPush(cur);
 	}
@@ -224,15 +218,14 @@ public class ParseHandler {
 			pre = stackPeek();
 			if(pre != null){
 				Object castObj = cur.target();
-				
-				if(pre.isType(Map.class)){
+				if(pre.isMap()){
 					ObjectUtil.put(pre, pre.getKey(), castObj);
 					model = HandleModel.KEY;
-				}else if(pre.isType(Collection.class)){
+				}else if(pre.isCollection() || pre.isArray()){
 					ObjectUtil.add(pre, castObj);
 					model = HandleModel.VALUE;
 				}else if(pre.isBean()) {
-					Field field = objectFieldCache.get(pre.getType()).get(pre.getKey());
+					Field field = FieldCacheHelper.getField(pre.getType(), pre.getKey());
 					try {
 						field.set(pre.getObj(), castObj);
 					} catch (IllegalArgumentException e) {
@@ -306,9 +299,6 @@ public class ParseHandler {
 
 	public ObjectEntity stackPop(){
 		if(! stack.isEmpty()){
-			if(! table.peek().isBean()) {
-				table.pop();
-			}
 			return stack.pop();
 		}else{
 			return null;

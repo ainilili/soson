@@ -1,10 +1,13 @@
-package org.nico.soson.cache;
+package org.nico.soson.cache.impl;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ObjectFieldCache implements Cache<Class<?>, Map<String, Field>>, CacheInit<Class<?>>{
+import org.nico.soson.cache.Cache;
+import org.nico.soson.cache.CacheInit;
+
+public class FieldCache implements Cache<Class<?>, Map<String, Field>>, CacheInit<Class<?>>{
 
 	private static Map<Class<?>, Map<String, Field>> cacheMap = new HashMap<>();
 

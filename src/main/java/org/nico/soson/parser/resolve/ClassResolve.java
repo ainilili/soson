@@ -1,15 +1,12 @@
 package org.nico.soson.parser.resolve;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.nico.soson.entity.Complex;
-import org.nico.soson.exception.UnSupportedException;
 import org.nico.soson.parser.resolve.ClassResolve.Genericity;
 import org.nico.soson.utils.ArrayUtil;
 import org.nico.soson.utils.ClassUtil;
@@ -122,7 +119,7 @@ public class ClassResolve implements SosonResolve<Genericity>{
 			if(! this.isMap) {
 				this.isCollection = ClassUtil.isCollection(rawType);
 				if(! this.isCollection) {
-					this.isArray = ClassUtil.isArray(rawType);
+					this.isArray = Array.class.isAssignableFrom(rawType) || rawType.isArray();
 					if(! isArray) {
 						this.isBean = ClassUtil.isBean(rawType);
 					}

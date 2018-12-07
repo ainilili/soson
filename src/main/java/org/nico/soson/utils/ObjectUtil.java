@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
+import org.nico.soson.cache.helper.FieldCacheHelper;
 import org.nico.soson.entity.ObjectEntity;
 
 /** 
@@ -17,17 +18,14 @@ public class ObjectUtil {
 	public static void put(ObjectEntity op, String key, Object value){
 		if(op.isBean()) {
 			try {
-				Field f = op.getType().getDeclaredField(key);
+				Field field = FieldCacheHelper.getField(op.getType(), key);
 				try {
-					f.setAccessible(true);
-					f.set(op.getObj(), value);
+					field.set(op.getObj(), value);
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
 					e.printStackTrace();
 				}
-			} catch (NoSuchFieldException e) {
-				e.printStackTrace();
 			} catch (SecurityException e) {
 				e.printStackTrace();
 			}

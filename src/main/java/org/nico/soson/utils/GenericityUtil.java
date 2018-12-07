@@ -35,12 +35,13 @@ public class GenericityUtil {
 			Type subType = ((GenericArrayType) type).getGenericComponentType();
 			parent.setGenericities(parserType(new Type[] {subType}, parent));
 			parserByTier(subType, parent.getGenericities()[0]);
-		}else if(type instanceof Class) {
-			Genericity child = new Genericity();
-			child.setRawType((Class<?>)type);
-			child.setParent(parent);
-			parent.setGenericities(new Genericity[] {child});
 		}
+//		else if(type instanceof Class) {
+//			Genericity child = new Genericity();
+//			child.setRawType((Class<?>)type);
+//			child.setParent(parent);
+//			parent.setGenericities(new Genericity[] {child});
+//		}
 	}
 	
 	public static Genericity[] parserType(Type[] subTypes, Genericity parent) {
@@ -57,8 +58,13 @@ public class GenericityUtil {
 			}else if(subType instanceof GenericArrayType){
 				child.setRawType(Array.class);
 			}
-			child.setParent(parent);
-			childs[index] = child;
+			
+			if(subType instanceof TypeVariable) {
+				childs[index] = null;
+			}else {
+				child.setParent(parent);
+				childs[index] = child;
+			}
 		}
 		return childs;
 	}

@@ -25,22 +25,46 @@ public class ObjectEntity {
 	
 	private boolean isBean;
 	
-	public ObjectEntity(Object obj, Class<?> type, boolean isBean) {
+	private Genericity generic;
+	
+	public ObjectEntity(Object obj, Class<?> type, Genericity generic, boolean isBean) {
 		this.obj = obj;
 		this.type = type;
 		this.cast = type;
 		this.isBean = isBean;
+		this.generic = generic;
 	}
 	
-	public ObjectEntity(Object obj, Class<?> type, Class<?> cast, boolean isBean) {
+	public ObjectEntity(Object obj, Class<?> type, Class<?> cast, Genericity generic, boolean isBean) {
 		this.obj = obj;
 		this.type = type;
 		this.cast = cast;
 		this.isBean = isBean;
+		this.generic = generic;
+	}
+
+	public final Genericity getGeneric() {
+		return generic;
+	}
+
+	public final void setGeneric(Genericity generic) {
+		this.generic = generic;
 	}
 
 	public final boolean isBean() {
 		return isBean;
+	}
+	
+	public final boolean isMap() {
+		return Map.class.isAssignableFrom(type);
+	}
+	
+	public final boolean isCollection() {
+		return Collection.class.isAssignableFrom(type);
+	}
+	
+	public final boolean isArray() {
+		return Array.class.isAssignableFrom(type);
 	}
 
 	public final void setBean(boolean isBean) {
