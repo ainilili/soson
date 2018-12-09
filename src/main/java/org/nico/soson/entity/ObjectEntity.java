@@ -113,19 +113,16 @@ public class ObjectEntity {
 		}else {
 			if(cast.isArray()) {
 				Collection<?> list = ((Collection<?>)obj);
-				Class<?> c = null;
-				for(Object o: list) {
-					c = o.getClass();
-					break;
+				Class<?> c = cast.getComponentType();
+				if(c == Array.class){
+					for(Object o: list) {
+						c = o.getClass();
+						break;
+					}
 				}
-				Object array = null;
-				if(c != null) {
-					array = Array.newInstance(c, list.size());
-				}else {
-					array = Array.newInstance(cast.getComponentType(), list.size());
-				}
-				
+				Object array = Array.newInstance(c, list.size());
 				int index = 0;
+				
 				for(Object obj: list) {
 					Array.set(array, index ++, obj);
 				}

@@ -8,7 +8,11 @@ import java.util.Map;
 public class ClassUtil {
 
 	public static boolean isPrimitive(Class<?> clazz) {
-		return clazz.isPrimitive();
+		return isNumber(clazz)
+				|| isBoolean(clazz)
+				|| isDate(clazz)
+				|| isEnum(clazz)
+				|| clazz == String.class;
 	}
 	
 	public static boolean isNumber(Class<?> clazz) {

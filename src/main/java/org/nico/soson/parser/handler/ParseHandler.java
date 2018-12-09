@@ -5,13 +5,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Collection;
-import java.util.Map;
 import java.util.Stack;
 
-import org.nico.soson.cache.Cache;
 import org.nico.soson.cache.helper.FieldCacheHelper;
-import org.nico.soson.cache.impl.FieldCache;
 import org.nico.soson.entity.HandleModel;
 import org.nico.soson.entity.KVEntity;
 import org.nico.soson.entity.LocaterType;
@@ -142,6 +138,11 @@ public class ParseHandler {
 		//special handle --> get java bean field type
 		pre = stackPeek();
 		if(pre == null) {
+			if(genericRoot.isArray()){
+				if(! genericRoot.getRawType().isArray()){
+					genericRoot.setRawType(Array.newInstance(genericRoot.getGenericities()[0].getRawType(), 0).getClass());
+				}
+			}
 			cur = genericRoot == null ? getInstance(locaterType) : getInstance(genericRoot);
 		}else {
 			if(keyEnough()) pre.setKey(keyGet());
@@ -156,7 +157,9 @@ public class ParseHandler {
 					}else if(targetFieldGenericType instanceof TypeVariable){
 						Genericity childGenericity = preGenericity.getTagGenericity(((TypeVariable<?>) targetFieldGenericType).getTypeName());
 						if(childGenericity.isArray()) {
-							childGenericity.setRawType(Array.newInstance(childGenericity.getGenericities()[0].getRawType(), 0).getClass());
+							if(! childGenericity.getRawType().isArray()){
+								childGenericity.setRawType(Array.newInstance(childGenericity.getGenericities()[0].getRawType(), 0).getClass());
+							}
 						}
 						cur = getInstance(childGenericity);
 					}else if(targetFieldGenericType instanceof ParameterizedType){
@@ -168,6 +171,8 @@ public class ParseHandler {
 							}
 						}
 						cur = getInstance(genericity);
+					}else if(targetFieldGenericType instanceof Class){
+						cur = getInstance(targetFieldType);
 					}
 				}else {
 					throw new InstanceException("The field " + pre + " for " + pre.getType() + " was not found !");
@@ -179,7 +184,9 @@ public class ParseHandler {
 					if(generic.isArray()) {
 						Genericity childGenericity = generic.getGenericities()[0];
 						if(childGenericity.isArray()) {
-							childGenericity.setRawType(Array.newInstance(childGenericity.getGenericities()[0].getRawType(), 0).getClass());
+							if(! childGenericity.getRawType().isArray()){
+								childGenericity.setRawType(Array.newInstance(childGenericity.getGenericities()[0].getRawType(), 0).getClass());
+							}
 						}
 						cur = getInstance(generic.getGenericities()[0]);
 					}else {
@@ -278,12 +285,12 @@ public class ParseHandler {
 	 */
 	public void handleComma(char c){
 		if(keyEnough()){
-			ObjectUtil.put(stackPeek(), keyGet(), valueGet());
+			ObjectUtil.put(stackPeek(), keyGet(), value);
 			keyClear();
 			valueClear();
 			model = HandleModel.KEY;
 		}else if(valueEnough()){
-			ObjectUtil.add(stackPeek(), valueGet());
+			ObjectUtil.add(stackPeek(), value);
 			valueClear();
 			model = HandleModel.VALUE;
 		}
